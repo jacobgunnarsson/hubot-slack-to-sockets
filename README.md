@@ -1,6 +1,6 @@
 # hubot-slockets
 
-A hubot script that does the things
+To be written.
 
 See [`src/slockets.coffee`](src/slockets.coffee) for full documentation.
 
@@ -16,11 +16,4 @@ Then add **hubot-slockets** to your `external-scripts.json`:
 [
   "hubot-slockets"
 ]
-```
-
-## Sample Interaction
-
-```
-user1>> hubot hello
-hubot>> hello!
 ```
