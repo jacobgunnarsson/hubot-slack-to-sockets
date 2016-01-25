@@ -1,19 +1,19 @@
-# hubot-slockets
+# hubot-slack-to-sockets
 
 To be written.
 
-See [`src/slockets.coffee`](src/slockets.coffee) for full documentation.
+See [`src/slack-to-sockets.coffee`](src/slack-to-sockets.coffee) for full documentation.
 
 ## Installation
 
 In hubot project repo, run:
 
-`npm install hubot-slockets --save`
+`npm install hubot-slack-to-sockets --save`
 
-Then add **hubot-slockets** to your `external-scripts.json`:
+Then add **hubot-slack-to-sockets** to your `external-scripts.json`:
 
 ```json
 [
-  "hubot-slockets"
+  "hubot-slack-to-sockets"
 ]
 ```

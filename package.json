@@ -1,5 +1,5 @@
 {
-  "name": "hubot-slockets",
+  "name": "hubot-slack-to-sockets",
   "description": "A hubot script that does the things",
   "version": "0.0.0",
   "author": "Jacob Gunnarsson <jacob.gunnarsson@hyperisland.se>",
@@ -7,10 +7,10 @@
   "keywords": "hubot, hubot-scripts",
   "repository": {
     "type": "git",
-    "url": "git://github.com/hubot-scripts/hubot-slockets.git"
+    "url": "git://github.com/jacobgunnarsson/hubot-slack-to-sockets.git"
   },
   "bugs": {
-    "url": "https://github.com/hubot-scripts/hubot-slockets/issues"
+    "url": "https://github.com/jacobgunnarsson/hubot-slack-to-sockets/issues"
   },
   "dependencies": {
     "socket.io": "^1.4.4"

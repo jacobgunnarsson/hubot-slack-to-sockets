@@ -6,43 +6,50 @@
 #  "socket.io": "^1.4.4"
 #
 # Configuration:
-#   HUBOT_SLOCKETS_SOCKET_PORT - Overrides the default WebSockets port (7070)
+#   HUBOT_S2S_SOCKET_PORT - Overrides the default WebSockets port (7070)
 #
 # Commands:
-#   <hubot name> slockets connected - list connected user across namespaces
+#   <hubot name> s2s connected - list connected user across namespaces
 #
 # Author:
 #   Jacob Gunnarsson <jacob.gunnarsson@hyperisland.se>
 
 # Default settings
-defaults =
-  socketPort: process.env.HUBOT_SLOCKETS_SOCKET_PORT || 7070
-  commandNamespace: 'slocket'
+settings =
+  socketPort: process.env.HUBOT_S2S_SOCKET_PORT || 7070
+  commandPrefix: 's2s'
   namespaces: [{
-    moniker: 'ᴅᴏʙᴇʀᴍᴀɴ.ɪᴏ'
     name: '/doberman.io'
     room: 'hubot-test'
+    moniker: 'ᴅᴏʙᴇʀᴍᴀɴ.ɪᴏ'
     sockets: []
   }]
 
 # Setup sockets.io
 io = require('socket.io')()
-io.listen defaults.socketPort
+io.listen settings.socketPort
 
-# Setup Slockets object
-Slockets = {}
 
-Slockets.setup = (robot) ->
+# Namespace class
+class Namespace
+
+  @constructor: (defaults) ->
+    { @name, @room, @moniker } = defaults
+
+# Setup S2S object
+S2S = {}
+
+S2S.setup = (robot) ->
   @robot = robot
-  @namespaces = defaults.namespaces
+  @namespaces = []
 
-  # Setup namespace io:s
+  # Setup namespaces
   for namespace in @namespaces
-    namespace.Slockets = @
+    namespace.S2S = @
     namespace.robot = @robot
     namespace.io = io.of namespace.name, () =>
       namespace.io.on 'connection', (socket) =>
-        return if socket._initialized
+        return if socket in namespace.sockets
         @_log 'Socket connected'
         socket.on 'message',      @socketRecieveMessage
         socket.on 'connectUser',  @socketConnectUser
@@ -52,38 +59,38 @@ Slockets.setup = (robot) ->
 
   # Hook up hubot listener
   robot.listen @robotListenMatcher.bind(@), @robotListenCallback.bind(@)
-  robot.respond /slockets connected/gi, @robotRespondConnected.bind(@)
+  robot.respond /s2s connected/gi, @robotRespondConnected.bind(@)
 
-Slockets.robotListenMatcher = (message) ->
+S2S.robotListenMatcher = (message) ->
   matchedNamespaces = (namespace for namespace in @namespaces when namespace.room is message.room)
 
-Slockets.robotListenCallback = (response) ->
+S2S.robotListenCallback = (response) ->
   @sendMessage namespace, response.message for namespace in response.match
 
-Slockets.robotRespondConnected = (response) ->
+S2S.robotRespondConnected = (response) ->
   connectedUsers = @.namespaces.reduce ((sum, namespace) -> sum + namespace.sockets.length), 0
   response.send connectedUsers + ' connected users'
 
-Slockets.sendMessage = (namespace, message) ->
+S2S.sendMessage = (namespace, message) ->
   namespace.io.emit 'message', message
 
-Slockets.socketConnectUser = (message) ->
-  @.namespace.Slockets._log message.name + ' joined'
+S2S.socketConnectUser = (message) ->
+  @.namespace.S2S._log message.name + ' joined'
   @.name = message.name
-  @.namespace.robot.messageRoom @.namespace.room, @.namespace.Slockets._formatMessage message.name, 'connected! @here', @.namespace
+  @.namespace.robot.messageRoom @.namespace.room, @.namespace.S2S._formatMessage message.name, 'connected! @here', @.namespace
 
-Slockets.socketDisconnect = () ->
-  @.namespace.Slockets._log 'Socket disconnected'
+S2S.socketDisconnect = () ->
+  @.namespace.S2S._log 'Socket disconnected'
   @.namespace.sockets.splice @namespace.sockets.indexOf @, 1
 
-Slockets.socketRecieveMessage = (message) ->
-  @.namespace.robot.messageRoom @.namespace.room, @.Slockets._formatMessage message.name, 'says: ' + message.text, @.namespace
+S2S.socketRecieveMessage = (message) ->
+  @.namespace.robot.messageRoom @.namespace.room, @.S2S._formatMessage message.name, 'says: ' + message.text, @.namespace
 
-Slockets._formatMessage = (name = 'Anonymous', message, namespace) ->
+S2S._formatMessage = (name = 'Anonymous', message, namespace) ->
   namespace.moniker + ' - *' + name + '* ' + message
 
-Slockets._log = (message) ->
-  @robot.logger.debug('Slocket - ' + message);
+S2S._log = (message) ->
+  @robot.logger.debug('Slack to Sockets - ' + message);
 
 # Finally export
-module.exports = Slockets.setup.bind Slockets
+module.exports = S2S.setup.bind S2S
